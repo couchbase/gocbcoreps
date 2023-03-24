@@ -2,6 +2,7 @@ package gocbps
 
 import (
 	"crypto/x509"
+	"fmt"
 	"strings"
 
 	"github.com/couchbase/goprotostellar/genproto/analytics_v1"
@@ -29,36 +30,42 @@ type ConnectOptions struct {
 	Username          string
 	Password          string
 	ClientCertificate *x509.CertPool
+	ServerURL         string
 }
 
 func Connect(connStr string, opts *ConnectOptions) (*Client, error) {
 	var transportDialOpt grpc.DialOption
 	var perRpcDialOpt grpc.DialOption
 
-	if opts.ClientCertificate != nil {
-		transportDialOpt = grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(opts.ClientCertificate, ""))
-		perRpcDialOpt = nil
-	} else if opts.Username != "" && opts.Password != "" {
+	// All endpoints are auth protected!
+	if opts.Username == "" || opts.Password == "" {
+		return nil, fmt.Errorf("username and password must not be empty")
+	}
+
+	if opts.ClientCertificate != nil && (opts.Username != "" && opts.Password != "") {
+		transportDialOpt = grpc.WithTransportCredentials(
+			credentials.NewClientTLSFromCert(opts.ClientCertificate, opts.ServerURL))
 		basicAuthCreds, err := newGrpcBasicAuth(opts.Username, opts.Password)
 		if err != nil {
 			return nil, err
 		}
-
-		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
 		perRpcDialOpt = grpc.WithPerRPCCredentials(basicAuthCreds)
 	} else {
+		// When gateway is not TLS enabled
 		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
-		perRpcDialOpt = nil
+		basicAuthCreds, err := newGrpcBasicAuth(opts.Username, opts.Password)
+		if err != nil {
+			return nil, err
+		}
+		perRpcDialOpt = grpc.WithPerRPCCredentials(basicAuthCreds)
 	}
 
 	// use port 18091 by default
-	{
-		connStrPieces := strings.Split(connStr, ":")
-		if len(connStrPieces) == 1 {
-			connStrPieces = append(connStrPieces, "18098")
-		}
-		connStr = strings.Join(connStrPieces, ":")
+	connStrPieces := strings.Split(connStr, ":")
+	if len(connStrPieces) == 1 {
+		connStrPieces = append(connStrPieces, "18098")
 	}
+	connStr = strings.Join(connStrPieces, ":")
 
 	dialOpts := []grpc.DialOption{transportDialOpt}
 	if perRpcDialOpt != nil {
