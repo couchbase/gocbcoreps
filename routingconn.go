@@ -3,6 +3,7 @@ package gocbps
 import (
 	"crypto/x509"
 
+	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
 	"github.com/couchbase/goprotostellar/genproto/routing_v1"
@@ -18,10 +19,11 @@ type routingConnOptions struct {
 }
 
 type routingConn struct {
-	conn      *grpc.ClientConn
-	routingV1 routing_v1.RoutingServiceClient
-	kvV1      kv_v1.KvServiceClient
-	queryV1   query_v1.QueryServiceClient
+	conn              *grpc.ClientConn
+	routingV1         routing_v1.RoutingServiceClient
+	kvV1              kv_v1.KvServiceClient
+	queryV1           query_v1.QueryServiceClient
+	adminCollectionV1 admin_collection_v1.CollectionAdminServiceClient
 }
 
 // Verify that routingConn implements Conn
@@ -75,4 +77,8 @@ func (c *routingConn) KvV1() kv_v1.KvServiceClient {
 
 func (c *routingConn) QueryV1() query_v1.QueryServiceClient {
 	return c.queryV1
+}
+
+func (c *routingConn) AdminCollectionV1() admin_collection_v1.CollectionAdminServiceClient {
+	return c.adminCollectionV1
 }
