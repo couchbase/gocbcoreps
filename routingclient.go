@@ -6,6 +6,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
@@ -147,6 +148,9 @@ func (c *RoutingClient) QueryV1() query_v1.QueryServiceClient {
 	return &routingImpl_QueryV1{c}
 }
 
-func (c *RoutingClient) AdminCollectionV1() admin_collection_v1.CollectionAdminServiceClient {
-	return &routingImpl_AdminCollectionV1{c}
+func (c *RoutingClient) CollectionV1() admin_collection_v1.CollectionAdminServiceClient {
+	return &routingImpl_CollectionV1{c}
+}
+func (c *RoutingClient) BucketV1() admin_bucket_v1.BucketAdminServiceClient {
+	return &routingImpl_BucketV1{c}
 }

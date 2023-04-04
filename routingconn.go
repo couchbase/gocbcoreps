@@ -3,6 +3,7 @@ package gocbps
 import (
 	"crypto/x509"
 
+	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
@@ -19,11 +20,12 @@ type routingConnOptions struct {
 }
 
 type routingConn struct {
-	conn              *grpc.ClientConn
-	routingV1         routing_v1.RoutingServiceClient
-	kvV1              kv_v1.KvServiceClient
-	queryV1           query_v1.QueryServiceClient
-	adminCollectionV1 admin_collection_v1.CollectionAdminServiceClient
+	conn         *grpc.ClientConn
+	routingV1    routing_v1.RoutingServiceClient
+	kvV1         kv_v1.KvServiceClient
+	queryV1      query_v1.QueryServiceClient
+	collectionV1 admin_collection_v1.CollectionAdminServiceClient
+	bucketV1     admin_bucket_v1.BucketAdminServiceClient
 }
 
 // Verify that routingConn implements Conn
@@ -79,6 +81,10 @@ func (c *routingConn) QueryV1() query_v1.QueryServiceClient {
 	return c.queryV1
 }
 
-func (c *routingConn) AdminCollectionV1() admin_collection_v1.CollectionAdminServiceClient {
-	return c.adminCollectionV1
+func (c *routingConn) CollectionV1() admin_collection_v1.CollectionAdminServiceClient {
+	return c.collectionV1
+}
+
+func (c *routingConn) BucketV1() admin_bucket_v1.BucketAdminServiceClient {
+	return c.bucketV1
 }
