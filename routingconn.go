@@ -5,6 +5,7 @@ import (
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
+	"github.com/couchbase/goprotostellar/genproto/analytics_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
 	"github.com/couchbase/goprotostellar/genproto/routing_v1"
@@ -26,6 +27,7 @@ type routingConn struct {
 	queryV1      query_v1.QueryServiceClient
 	collectionV1 admin_collection_v1.CollectionAdminServiceClient
 	bucketV1     admin_bucket_v1.BucketAdminServiceClient
+	analyticsV1  analytics_v1.AnalyticsServiceClient
 }
 
 // Verify that routingConn implements Conn
@@ -87,4 +89,8 @@ func (c *routingConn) CollectionV1() admin_collection_v1.CollectionAdminServiceC
 
 func (c *routingConn) BucketV1() admin_bucket_v1.BucketAdminServiceClient {
 	return c.bucketV1
+}
+
+func (c *routingConn) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
+	return c.analyticsV1
 }

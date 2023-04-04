@@ -8,6 +8,7 @@ import (
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
+	"github.com/couchbase/goprotostellar/genproto/analytics_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
 	"github.com/couchbase/goprotostellar/genproto/routing_v1"
@@ -153,4 +154,8 @@ func (c *RoutingClient) CollectionV1() admin_collection_v1.CollectionAdminServic
 }
 func (c *RoutingClient) BucketV1() admin_bucket_v1.BucketAdminServiceClient {
 	return &routingImpl_BucketV1{c}
+}
+
+func (c *RoutingClient) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
+	return &routingImpl_AnalyticsV1{c}
 }
