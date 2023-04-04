@@ -1,4 +1,4 @@
-package gocbps
+package gocbcoreps
 
 type Node struct {
 	NodeID      string

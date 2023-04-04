@@ -1,4 +1,4 @@
-package gocbps
+package gocbcoreps
 
 import (
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
