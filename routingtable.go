@@ -1,4 +1,4 @@
-package gocbps
+package gocbcoreps
 
 import "sync/atomic"
 
