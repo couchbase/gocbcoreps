@@ -1,4 +1,4 @@
-module github.com/couchbase/gocbps
+module github.com/couchbase/gocbcoreps
 
 go 1.20
 
