@@ -123,6 +123,11 @@ func (c *RoutingClient) CloseBucket(bucketName string) {
 func (c *RoutingClient) fetchConn() *routingConn {
 	// TODO(brett19): We should probably be more clever here...
 	r := c.routing.Load()
+
+	if len(r.Conns) == 1 {
+		return r.Conns[0]
+	}
+
 	randConnIdx := rand.Intn(len(r.Conns) - 1)
 	return r.Conns[randConnIdx]
 }
