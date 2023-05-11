@@ -78,7 +78,7 @@ func (c *RoutingClient) OpenBucket(bucketName string) {
 	}
 
 	watcher := newRoutingWatcher(&routingWatcherOptions{
-		RoutingClient: nil,
+		RoutingClient: c.RoutingV1(),
 		BucketName:    bucketName,
 		RoutingTable:  c.routing,
 	})
