@@ -31,10 +31,11 @@ type RoutingClient struct {
 var _ Conn = (*RoutingClient)(nil)
 
 type DialOptions struct {
-	ClientCertificate *x509.CertPool
-	Username          string
-	Password          string
-	Logger            *zap.Logger
+	ClientCertificate  *x509.CertPool
+	Username           string
+	Password           string
+	Logger             *zap.Logger
+	InsecureSkipVerify bool
 }
 
 func Dial(target string, opts *DialOptions) (*RoutingClient, error) {
@@ -48,9 +49,10 @@ func Dial(target string, opts *DialOptions) (*RoutingClient, error) {
 	}
 
 	conn, err := dialRoutingConn(target, &routingConnOptions{
-		ClientCertificate: opts.ClientCertificate,
-		Username:          opts.Username,
-		Password:          opts.Password,
+		ClientCertificate:  opts.ClientCertificate,
+		Username:           opts.Username,
+		Password:           opts.Password,
+		InsecureSkipVerify: opts.InsecureSkipVerify,
 	})
 	if err != nil {
 		return nil, err

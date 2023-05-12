@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/cenkalti/backoff/v4 v4.2.0
-	github.com/couchbase/goprotostellar v0.0.0-20230321094315-7a54be56b9c9
+	github.com/couchbase/goprotostellar v0.0.1-3
 	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.53.0
 )
