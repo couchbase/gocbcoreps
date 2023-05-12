@@ -1,7 +1,9 @@
 package gocbcoreps
 
 import (
+	"crypto/tls"
 	"crypto/x509"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
@@ -11,13 +13,13 @@ import (
 	"github.com/couchbase/goprotostellar/genproto/routing_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type routingConnOptions struct {
-	ClientCertificate *x509.CertPool
-	Username          string
-	Password          string
+	InsecureSkipVerify bool // used for enabling TLS, but skipping verification
+	ClientCertificate  *x509.CertPool
+	Username           string
+	Password           string
 }
 
 type routingConn struct {
@@ -37,19 +39,24 @@ func dialRoutingConn(address string, opts *routingConnOptions) (*routingConn, er
 	var transportDialOpt grpc.DialOption
 	var perRpcDialOpt grpc.DialOption
 
-	if opts.ClientCertificate != nil {
+	if opts.ClientCertificate != nil { // use tls
 		transportDialOpt = grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(opts.ClientCertificate, ""))
-		perRpcDialOpt = nil
-	} else if opts.Username != "" && opts.Password != "" {
+	} else if opts.InsecureSkipVerify { // use tls, but skip verification
+		creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
+		transportDialOpt = grpc.WithTransportCredentials(creds)
+	} else { // plain text
+		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
+	// setup basic auth.
+	if opts.Username != "" && opts.Password != "" {
 		basicAuthCreds, err := NewGrpcBasicAuth(opts.Username, opts.Password)
 		if err != nil {
 			return nil, err
 		}
-
-		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
 		perRpcDialOpt = grpc.WithPerRPCCredentials(basicAuthCreds)
+
 	} else {
-		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
 		perRpcDialOpt = nil
 	}
 
