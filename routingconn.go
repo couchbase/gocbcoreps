@@ -12,6 +12,7 @@ import (
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
 	"github.com/couchbase/goprotostellar/genproto/routing_v1"
+	"github.com/couchbase/goprotostellar/genproto/search_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -31,6 +32,7 @@ type routingConn struct {
 	collectionV1 admin_collection_v1.CollectionAdminServiceClient
 	bucketV1     admin_bucket_v1.BucketAdminServiceClient
 	analyticsV1  analytics_v1.AnalyticsServiceClient
+	searchv1     search_v1.SearchServiceClient
 }
 
 // Verify that routingConn implements Conn
@@ -101,6 +103,10 @@ func (c *routingConn) BucketV1() admin_bucket_v1.BucketAdminServiceClient {
 
 func (c *routingConn) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
 	return c.analyticsV1
+}
+
+func (c *routingConn) SearchV1() search_v1.SearchServiceClient {
+	return c.searchv1
 }
 
 func (c *routingConn) Close() error {

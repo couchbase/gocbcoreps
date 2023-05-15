@@ -12,6 +12,7 @@ import (
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
 	"github.com/couchbase/goprotostellar/genproto/routing_v1"
+	"github.com/couchbase/goprotostellar/genproto/search_v1"
 	"go.uber.org/zap"
 )
 
@@ -165,6 +166,10 @@ func (c *RoutingClient) BucketV1() admin_bucket_v1.BucketAdminServiceClient {
 
 func (c *RoutingClient) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
 	return &routingImpl_AnalyticsV1{c}
+}
+
+func (c *RoutingClient) SearchV1() search_v1.SearchServiceClient {
+	return &routingImpl_SearchV1{c}
 }
 
 func (c *RoutingClient) Close() error {
