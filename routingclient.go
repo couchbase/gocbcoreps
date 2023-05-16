@@ -166,3 +166,27 @@ func (c *RoutingClient) BucketV1() admin_bucket_v1.BucketAdminServiceClient {
 func (c *RoutingClient) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
 	return &routingImpl_AnalyticsV1{c}
 }
+
+func (c *RoutingClient) Close() error {
+	table := c.routing.Load()
+	if table == nil {
+		// We're already closed.
+		return nil
+	}
+	c.lock.Lock()
+	var closeErr error
+	for _, conn := range table.Conns {
+		err := conn.Close()
+		if err != nil {
+			closeErr = err
+		}
+	}
+	c.routing.Store(nil)
+
+	for bucket := range c.buckets {
+		c.CloseBucket(bucket)
+	}
+	c.lock.Unlock()
+
+	return closeErr
+}
