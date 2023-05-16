@@ -3,6 +3,7 @@ package gocbcoreps
 import (
 	"crypto/tls"
 	"crypto/x509"
+
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
@@ -100,4 +101,8 @@ func (c *routingConn) BucketV1() admin_bucket_v1.BucketAdminServiceClient {
 
 func (c *routingConn) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
 	return c.analyticsV1
+}
+
+func (c *routingConn) Close() error {
+	return c.conn.Close()
 }
