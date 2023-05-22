@@ -81,6 +81,7 @@ func dialRoutingConn(address string, opts *routingConnOptions) (*routingConn, er
 		collectionV1: admin_collection_v1.NewCollectionAdminServiceClient(conn),
 		bucketV1:     admin_bucket_v1.NewBucketAdminServiceClient(conn),
 		analyticsV1:  analytics_v1.NewAnalyticsServiceClient(conn),
+		searchv1:     search_v1.NewSearchServiceClient(conn),
 	}, nil
 }
 
