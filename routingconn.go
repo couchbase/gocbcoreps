@@ -74,10 +74,13 @@ func dialRoutingConn(address string, opts *routingConnOptions) (*routingConn, er
 	}
 
 	return &routingConn{
-		conn:      conn,
-		routingV1: routing_v1.NewRoutingServiceClient(conn),
-		kvV1:      kv_v1.NewKvServiceClient(conn),
-		queryV1:   query_v1.NewQueryServiceClient(conn),
+		conn:         conn,
+		routingV1:    routing_v1.NewRoutingServiceClient(conn),
+		kvV1:         kv_v1.NewKvServiceClient(conn),
+		queryV1:      query_v1.NewQueryServiceClient(conn),
+		collectionV1: admin_collection_v1.NewCollectionAdminServiceClient(conn),
+		bucketV1:     admin_bucket_v1.NewBucketAdminServiceClient(conn),
+		analyticsV1:  analytics_v1.NewAnalyticsServiceClient(conn),
 	}, nil
 }
 
