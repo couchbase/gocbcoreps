@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 
+	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
+
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
@@ -32,7 +34,8 @@ type routingConn struct {
 	collectionV1 admin_collection_v1.CollectionAdminServiceClient
 	bucketV1     admin_bucket_v1.BucketAdminServiceClient
 	analyticsV1  analytics_v1.AnalyticsServiceClient
-	searchv1     search_v1.SearchServiceClient
+	searchV1     search_v1.SearchServiceClient
+	queryAdminV1 admin_query_v1.QueryAdminServiceClient
 }
 
 // Verify that routingConn implements Conn
@@ -81,6 +84,7 @@ func dialRoutingConn(address string, opts *routingConnOptions) (*routingConn, er
 		collectionV1: admin_collection_v1.NewCollectionAdminServiceClient(conn),
 		bucketV1:     admin_bucket_v1.NewBucketAdminServiceClient(conn),
 		analyticsV1:  analytics_v1.NewAnalyticsServiceClient(conn),
+		queryAdminV1: admin_query_v1.NewQueryAdminServiceClient(conn),
 	}, nil
 }
 
@@ -109,7 +113,11 @@ func (c *routingConn) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
 }
 
 func (c *routingConn) SearchV1() search_v1.SearchServiceClient {
-	return c.searchv1
+	return c.searchV1
+}
+
+func (c *routingConn) QueryAdminV1() admin_query_v1.QueryAdminServiceClient {
+	return c.queryAdminV1
 }
 
 func (c *routingConn) Close() error {
