@@ -34,7 +34,3 @@ func (t *atomicRoutingTable) Load() *routingTable {
 func (t *atomicRoutingTable) Store(new *routingTable) {
 	t.Value.Store(new)
 }
-
-func (t *atomicRoutingTable) CompareAndSwap(old, new *routingTable) bool {
-	return t.Value.CompareAndSwap(old, new)
-}
