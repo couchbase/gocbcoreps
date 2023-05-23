@@ -1,6 +1,7 @@
 package gocbcoreps
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 
@@ -41,7 +42,7 @@ type routingConn struct {
 // Verify that routingConn implements Conn
 var _ Conn = (*routingConn)(nil)
 
-func dialRoutingConn(address string, opts *routingConnOptions) (*routingConn, error) {
+func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptions) (*routingConn, error) {
 	var transportDialOpt grpc.DialOption
 	var perRpcDialOpt grpc.DialOption
 
@@ -71,7 +72,7 @@ func dialRoutingConn(address string, opts *routingConnOptions) (*routingConn, er
 		dialOpts = append(dialOpts, perRpcDialOpt)
 	}
 
-	conn, err := grpc.Dial(address, dialOpts...)
+	conn, err := grpc.DialContext(ctx, address, dialOpts...)
 	if err != nil {
 		return nil, err
 	}
