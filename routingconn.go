@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 
+	"google.golang.org/grpc/connectivity"
+
 	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
 
 	"google.golang.org/grpc/credentials/insecure"
@@ -77,6 +79,9 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		return nil, err
 	}
 
+	// Start up the connection, rather than waiting for an RPC to occur.
+	conn.Connect()
+
 	return &routingConn{
 		conn:         conn,
 		routingV1:    routing_v1.NewRoutingServiceClient(conn),
@@ -123,4 +128,22 @@ func (c *routingConn) QueryAdminV1() admin_query_v1.QueryAdminServiceClient {
 
 func (c *routingConn) Close() error {
 	return c.conn.Close()
+}
+
+func (c *routingConn) State() ConnState {
+	switch c.conn.GetState() {
+	case connectivity.Connecting:
+		return ConnStateOffline
+	case connectivity.Shutdown:
+		return ConnStateOffline
+	case connectivity.TransientFailure:
+		return ConnStateOffline
+	case connectivity.Idle:
+		return ConnStateOffline
+	case connectivity.Ready:
+		return ConnStateOnline
+	}
+
+	// This connection is in an unknown state so let's assume offline.
+	return ConnStateOffline
 }

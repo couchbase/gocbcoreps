@@ -38,3 +38,26 @@ func (pool *routingConnPool) Close() error {
 
 	return err
 }
+
+func (pool *routingConnPool) State() ConnState {
+	var numOnline uint32
+	var numOffline uint32
+	for _, conn := range pool.conns {
+		switch conn.State() {
+		case ConnStateOffline:
+			numOffline++
+		case ConnStateOnline:
+			numOnline++
+		}
+	}
+	if numOffline == pool.Size() {
+		// If all connections are offline then our state is offline.
+		return ConnStateOffline
+	} else if numOnline == pool.Size() {
+		// If all connections are online then our state is online.
+		return ConnStateOnline
+	} else {
+		// If we have some connections online and some offline then we're degraded.
+		return ConnStateDegraded
+	}
+}
