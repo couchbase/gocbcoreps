@@ -17,7 +17,7 @@ type bucketRoutingTable struct {
 }
 
 type routingTable struct {
-	Conns     []*routingConn
+	Conns     *routingConnPool
 	Endpoints []*routingEndpoint
 
 	Buckets map[string]*bucketRoutingTable

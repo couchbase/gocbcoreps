@@ -2,7 +2,6 @@ package gocbcoreps
 
 import (
 	"crypto/x509"
-	"math/rand"
 	"net"
 	"sync"
 
@@ -39,6 +38,7 @@ type DialOptions struct {
 	Password           string
 	Logger             *zap.Logger
 	InsecureSkipVerify bool
+	PoolSize           uint32
 }
 
 func Dial(target string, opts *DialOptions) (*RoutingClient, error) {
@@ -51,19 +51,30 @@ func Dial(target string, opts *DialOptions) (*RoutingClient, error) {
 		}
 	}
 
-	conn, err := dialRoutingConn(target, &routingConnOptions{
-		ClientCertificate:  opts.ClientCertificate,
-		Username:           opts.Username,
-		Password:           opts.Password,
-		InsecureSkipVerify: opts.InsecureSkipVerify,
-	})
-	if err != nil {
-		return nil, err
+	var conns []*routingConn
+
+	var poolSize uint32 = 3
+	if opts.PoolSize > 0 {
+		poolSize = opts.PoolSize
+	}
+
+	for i := uint32(0); i < poolSize; i++ {
+		conn, err := dialRoutingConn(target, &routingConnOptions{
+			ClientCertificate:  opts.ClientCertificate,
+			Username:           opts.Username,
+			Password:           opts.Password,
+			InsecureSkipVerify: opts.InsecureSkipVerify,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		conns = append(conns, conn)
 	}
 
 	routing := &atomicRoutingTable{}
 	routing.Store(&routingTable{
-		Conns: []*routingConn{conn},
+		Conns: newRoutingConnPool(conns),
 	})
 
 	return &RoutingClient{
@@ -129,12 +140,7 @@ func (c *RoutingClient) fetchConn() *routingConn {
 	// TODO(brett19): We should probably be more clever here...
 	r := c.routing.Load()
 
-	if len(r.Conns) == 1 {
-		return r.Conns[0]
-	}
-
-	randConnIdx := rand.Intn(len(r.Conns) - 1)
-	return r.Conns[randConnIdx]
+	return r.Conns.Conn()
 }
 
 func (c *RoutingClient) fetchConnForBucket(bucketName string) *routingConn {
@@ -185,13 +191,7 @@ func (c *RoutingClient) Close() error {
 		return nil
 	}
 	c.lock.Lock()
-	var closeErr error
-	for _, conn := range table.Conns {
-		err := conn.Close()
-		if err != nil {
-			closeErr = err
-		}
-	}
+	closeErr := table.Conns.Close()
 	c.routing.Store(nil)
 
 	for bucket := range c.buckets {
