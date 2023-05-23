@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	backoff "github.com/cenkalti/backoff/v4"
 	"go.uber.org/zap"
 
 	"github.com/couchbase/goprotostellar/genproto/routing_v1"
@@ -48,8 +47,9 @@ func (w *routingWatcher) init() {
 }
 
 func (w *routingWatcher) procThread() {
-	b := backoff.NewExponentialBackOff()
-	b.Reset()
+	// We just use the default values for back off.
+	b := exponentialBackoff(0, 0, 0)
+	var numRetries uint32
 
 MainLoop:
 	for {
@@ -58,9 +58,10 @@ MainLoop:
 		})
 		if err != nil {
 			w.logger.Error("failed to watch routing", zap.Error(err))
+			numRetries++
 
 			select {
-			case <-time.After(b.NextBackOff()):
+			case <-time.After(b(numRetries)):
 				continue
 			case <-w.ctx.Done():
 				break MainLoop
@@ -69,7 +70,7 @@ MainLoop:
 		}
 
 		// Restart our backoff strategy now that we've successfully started watching...
-		b.Reset()
+		numRetries = 0
 
 		for {
 			topologyData, err := topologyCh.Recv()

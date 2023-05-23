@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	backoff "github.com/cenkalti/backoff/v4"
 	"github.com/couchbase/goprotostellar/genproto/routing_v1"
 	"go.uber.org/zap"
 )
@@ -50,8 +49,8 @@ func (p *RoutingClient) watchTopology(ctx context.Context, bucketName *string) (
 	// client itself needs to maintain knowledge of the topology anyways, we can perform coalescing
 	// of those watchers in the client (to reduce the number of watchers).
 
-	b := backoff.NewExponentialBackOff()
-	b.Reset()
+	b := exponentialBackoff(0, 0, 0)
+	var numRetries uint32
 
 	routingStream, err := p.RoutingV1().WatchRouting(ctx, &routing_v1.WatchRoutingRequest{
 		BucketName: bucketName,
@@ -77,14 +76,16 @@ func (p *RoutingClient) watchTopology(ctx context.Context, bucketName *string) (
 			if err != nil {
 				// TODO(brett19): Implement better error handling here...
 				p.logger.Error("failed to watch routing", zap.Error(err))
+				numRetries++
 
 				select {
-				case <-time.After(b.NextBackOff()):
+				case <-time.After(b(numRetries)):
 					continue
 				case <-ctx.Done():
 					break MainLoop
 				}
 			}
+			numRetries = 0
 
 			for {
 				routingResp, err := routingStream.Recv()
