@@ -141,6 +141,12 @@ func (c *RoutingClient) CloseBucket(bucketName string) {
 	c.lock.Unlock()
 }
 
+func (c *RoutingClient) ConnectionState() ConnState {
+	r := c.routing.Load()
+
+	return r.Conns.State()
+}
+
 func (c *RoutingClient) fetchConn() *routingConn {
 	// TODO(brett19): We should probably be more clever here...
 	r := c.routing.Load()
