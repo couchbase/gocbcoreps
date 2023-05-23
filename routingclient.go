@@ -1,6 +1,7 @@
 package gocbcoreps
 
 import (
+	"context"
 	"crypto/x509"
 	"net"
 	"sync"
@@ -42,6 +43,10 @@ type DialOptions struct {
 }
 
 func Dial(target string, opts *DialOptions) (*RoutingClient, error) {
+	return DialContext(context.Background(), target, opts)
+}
+
+func DialContext(ctx context.Context, target string, opts *DialOptions) (*RoutingClient, error) {
 	// use port 18091 by default
 	{
 		_, _, err := net.SplitHostPort(target)
@@ -59,7 +64,7 @@ func Dial(target string, opts *DialOptions) (*RoutingClient, error) {
 	}
 
 	for i := uint32(0); i < poolSize; i++ {
-		conn, err := dialRoutingConn(target, &routingConnOptions{
+		conn, err := dialRoutingConn(ctx, target, &routingConnOptions{
 			ClientCertificate:  opts.ClientCertificate,
 			Username:           opts.Username,
 			Password:           opts.Password,
