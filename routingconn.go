@@ -91,6 +91,7 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		bucketV1:     admin_bucket_v1.NewBucketAdminServiceClient(conn),
 		analyticsV1:  analytics_v1.NewAnalyticsServiceClient(conn),
 		queryAdminV1: admin_query_v1.NewQueryAdminServiceClient(conn),
+		searchV1:     search_v1.NewSearchServiceClient(conn),
 	}, nil
 }
 
