@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
+
 	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
@@ -193,6 +195,10 @@ func (c *RoutingClient) SearchV1() search_v1.SearchServiceClient {
 
 func (c *RoutingClient) QueryAdminV1() admin_query_v1.QueryAdminServiceClient {
 	return &routingImpl_QueryAdminV1{c}
+}
+
+func (c *RoutingClient) SearchAdminV1() admin_search_v1.SearchAdminServiceClient {
+	return &routingImpl_SearchAdminV1{c}
 }
 
 func (c *RoutingClient) Close() error {
