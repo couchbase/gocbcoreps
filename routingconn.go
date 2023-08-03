@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 
+	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
+
 	"google.golang.org/grpc/connectivity"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
@@ -30,15 +32,16 @@ type routingConnOptions struct {
 }
 
 type routingConn struct {
-	conn         *grpc.ClientConn
-	routingV1    routing_v1.RoutingServiceClient
-	kvV1         kv_v1.KvServiceClient
-	queryV1      query_v1.QueryServiceClient
-	collectionV1 admin_collection_v1.CollectionAdminServiceClient
-	bucketV1     admin_bucket_v1.BucketAdminServiceClient
-	analyticsV1  analytics_v1.AnalyticsServiceClient
-	searchV1     search_v1.SearchServiceClient
-	queryAdminV1 admin_query_v1.QueryAdminServiceClient
+	conn          *grpc.ClientConn
+	routingV1     routing_v1.RoutingServiceClient
+	kvV1          kv_v1.KvServiceClient
+	queryV1       query_v1.QueryServiceClient
+	collectionV1  admin_collection_v1.CollectionAdminServiceClient
+	bucketV1      admin_bucket_v1.BucketAdminServiceClient
+	analyticsV1   analytics_v1.AnalyticsServiceClient
+	searchV1      search_v1.SearchServiceClient
+	queryAdminV1  admin_query_v1.QueryAdminServiceClient
+	searchAdminV1 admin_search_v1.SearchAdminServiceClient
 }
 
 // Verify that routingConn implements Conn
@@ -83,15 +86,16 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 	conn.Connect()
 
 	return &routingConn{
-		conn:         conn,
-		routingV1:    routing_v1.NewRoutingServiceClient(conn),
-		kvV1:         kv_v1.NewKvServiceClient(conn),
-		queryV1:      query_v1.NewQueryServiceClient(conn),
-		collectionV1: admin_collection_v1.NewCollectionAdminServiceClient(conn),
-		bucketV1:     admin_bucket_v1.NewBucketAdminServiceClient(conn),
-		analyticsV1:  analytics_v1.NewAnalyticsServiceClient(conn),
-		queryAdminV1: admin_query_v1.NewQueryAdminServiceClient(conn),
-		searchV1:     search_v1.NewSearchServiceClient(conn),
+		conn:          conn,
+		routingV1:     routing_v1.NewRoutingServiceClient(conn),
+		kvV1:          kv_v1.NewKvServiceClient(conn),
+		queryV1:       query_v1.NewQueryServiceClient(conn),
+		collectionV1:  admin_collection_v1.NewCollectionAdminServiceClient(conn),
+		bucketV1:      admin_bucket_v1.NewBucketAdminServiceClient(conn),
+		analyticsV1:   analytics_v1.NewAnalyticsServiceClient(conn),
+		queryAdminV1:  admin_query_v1.NewQueryAdminServiceClient(conn),
+		searchV1:      search_v1.NewSearchServiceClient(conn),
+		searchAdminV1: admin_search_v1.NewSearchAdminServiceClient(conn),
 	}, nil
 }
 
@@ -125,6 +129,10 @@ func (c *routingConn) SearchV1() search_v1.SearchServiceClient {
 
 func (c *routingConn) QueryAdminV1() admin_query_v1.QueryAdminServiceClient {
 	return c.queryAdminV1
+}
+
+func (c *routingConn) SearchAdminV1() admin_search_v1.SearchAdminServiceClient {
+	return c.searchAdminV1
 }
 
 func (c *routingConn) Close() error {
