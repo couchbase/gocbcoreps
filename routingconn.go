@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 
+	"github.com/couchbase/goprotostellar/genproto/view_v1"
+
 	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
 
 	"google.golang.org/grpc/connectivity"
@@ -40,6 +42,7 @@ type routingConn struct {
 	bucketV1      admin_bucket_v1.BucketAdminServiceClient
 	analyticsV1   analytics_v1.AnalyticsServiceClient
 	searchV1      search_v1.SearchServiceClient
+	viewV1        view_v1.ViewServiceClient
 	queryAdminV1  admin_query_v1.QueryAdminServiceClient
 	searchAdminV1 admin_search_v1.SearchAdminServiceClient
 }
@@ -95,6 +98,7 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		analyticsV1:   analytics_v1.NewAnalyticsServiceClient(conn),
 		queryAdminV1:  admin_query_v1.NewQueryAdminServiceClient(conn),
 		searchV1:      search_v1.NewSearchServiceClient(conn),
+		viewV1:        view_v1.NewViewServiceClient(conn),
 		searchAdminV1: admin_search_v1.NewSearchAdminServiceClient(conn),
 	}, nil
 }
@@ -125,6 +129,10 @@ func (c *routingConn) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
 
 func (c *routingConn) SearchV1() search_v1.SearchServiceClient {
 	return c.searchV1
+}
+
+func (c *routingConn) ViewV1() view_v1.ViewServiceClient {
+	return c.viewV1
 }
 
 func (c *routingConn) QueryAdminV1() admin_query_v1.QueryAdminServiceClient {
