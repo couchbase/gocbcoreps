@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/couchbase/goprotostellar/genproto/view_v1"
+
 	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
@@ -191,6 +193,10 @@ func (c *RoutingClient) AnalyticsV1() analytics_v1.AnalyticsServiceClient {
 
 func (c *RoutingClient) SearchV1() search_v1.SearchServiceClient {
 	return &routingImpl_SearchV1{c}
+}
+
+func (c *RoutingClient) ViewV1() view_v1.ViewServiceClient {
+	return &routingImpl_ViewV1{c}
 }
 
 func (c *RoutingClient) QueryAdminV1() admin_query_v1.QueryAdminServiceClient {
