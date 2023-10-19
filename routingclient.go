@@ -62,7 +62,7 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 
 	var conns []*routingConn
 
-	var poolSize uint32 = 3
+	var poolSize uint32 = 1
 	if opts.PoolSize > 0 {
 		poolSize = opts.PoolSize
 	}
