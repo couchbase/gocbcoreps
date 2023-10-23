@@ -85,9 +85,6 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		return nil, err
 	}
 
-	// Start up the connection, rather than waiting for an RPC to occur.
-	conn.Connect()
-
 	return &routingConn{
 		conn:          conn,
 		routingV1:     routing_v1.NewRoutingServiceClient(conn),
