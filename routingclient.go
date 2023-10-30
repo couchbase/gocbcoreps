@@ -6,6 +6,9 @@ import (
 	"net"
 	"sync"
 
+	grpc_logsettable "github.com/grpc-ecosystem/go-grpc-middleware/logging/settable"
+	"go.uber.org/zap/zapgrpc"
+
 	"github.com/couchbase/goprotostellar/genproto/view_v1"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
@@ -60,6 +63,14 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 		}
 	}
 
+	logger := opts.Logger
+	if logger == nil {
+		logger = zap.NewNop()
+	}
+
+	// Setup grpc level logging, so that we can pipe connection level issues into our logs.
+	grpc_logsettable.ReplaceGrpcLoggerV2().Set(zapgrpc.NewLogger(logger))
+
 	var conns []*routingConn
 
 	var poolSize uint32 = 1
@@ -89,7 +100,7 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 	return &RoutingClient{
 		routing: routing,
 		buckets: make(map[string]*routingClient_Bucket),
-		logger:  opts.Logger,
+		logger:  logger,
 	}, nil
 }
 
