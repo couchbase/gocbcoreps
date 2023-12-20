@@ -41,3 +41,7 @@ func (c *routingImpl_QueryAdminV1) DropIndex(ctx context.Context, in *admin_quer
 func (c *routingImpl_QueryAdminV1) BuildDeferredIndexes(ctx context.Context, in *admin_query_v1.BuildDeferredIndexesRequest, opts ...grpc.CallOption) (*admin_query_v1.BuildDeferredIndexesResponse, error) {
 	return c.client.fetchConnForBucket(in.BucketName).QueryAdminV1().BuildDeferredIndexes(ctx, in, opts...)
 }
+
+func (c *routingImpl_QueryAdminV1) WaitForIndexOnline(ctx context.Context, in *admin_query_v1.WaitForIndexOnlineRequest, opts ...grpc.CallOption) (*admin_query_v1.WaitForIndexOnlineResponse, error) {
+	return c.client.fetchConnForBucket(in.BucketName).QueryAdminV1().WaitForIndexOnline(ctx, in, opts...)
+}

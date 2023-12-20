@@ -28,3 +28,6 @@ func (c *routingImpl_CollectionV1) CreateCollection(ctx context.Context, in *adm
 func (c *routingImpl_CollectionV1) DeleteCollection(ctx context.Context, in *admin_collection_v1.DeleteCollectionRequest, opts ...grpc.CallOption) (*admin_collection_v1.DeleteCollectionResponse, error) {
 	return c.client.fetchConnForBucket(in.BucketName).CollectionV1().DeleteCollection(ctx, in, opts...)
 }
+func (c *routingImpl_CollectionV1) UpdateCollection(ctx context.Context, in *admin_collection_v1.UpdateCollectionRequest, opts ...grpc.CallOption) (*admin_collection_v1.UpdateCollectionResponse, error) {
+	return c.client.fetchConnForBucket(in.BucketName).CollectionV1().UpdateCollection(ctx, in, opts...)
+}
