@@ -25,3 +25,6 @@ func (c *routingImpl_BucketV1) UpdateBucket(ctx context.Context, in *admin_bucke
 func (c *routingImpl_BucketV1) DeleteBucket(ctx context.Context, in *admin_bucket_v1.DeleteBucketRequest, opts ...grpc.CallOption) (*admin_bucket_v1.DeleteBucketResponse, error) {
 	return c.client.fetchConnForBucket(in.BucketName).bucketV1.DeleteBucket(ctx, in, opts...)
 }
+func (c *routingImpl_BucketV1) FlushBucket(ctx context.Context, in *admin_bucket_v1.FlushBucketRequest, opts ...grpc.CallOption) (*admin_bucket_v1.FlushBucketResponse, error) {
+	return c.client.fetchConnForBucket(in.BucketName).bucketV1.FlushBucket(ctx, in, opts...)
+}

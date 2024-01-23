@@ -3,7 +3,7 @@ module github.com/couchbase/gocbcoreps
 go 1.19
 
 require (
-	github.com/couchbase/goprotostellar v1.0.1
+	github.com/couchbase/goprotostellar v1.0.2-0.20240122192557-b65fd378bd4a
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.53.0
