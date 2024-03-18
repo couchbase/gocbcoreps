@@ -3,6 +3,8 @@ package gocbcoreps
 import (
 	"context"
 	"crypto/x509"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"net"
 	"sync"
 
@@ -47,6 +49,8 @@ type DialOptions struct {
 	Logger             *zap.Logger
 	InsecureSkipVerify bool
 	PoolSize           uint32
+	TracerProvider     trace.TracerProvider
+	MeterProvider      metric.MeterProvider
 }
 
 func Dial(target string, opts *DialOptions) (*RoutingClient, error) {
@@ -84,6 +88,8 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 			Username:           opts.Username,
 			Password:           opts.Password,
 			InsecureSkipVerify: opts.InsecureSkipVerify,
+			TracerProvider:     opts.TracerProvider,
+			MeterProvider:      opts.MeterProvider,
 		})
 		if err != nil {
 			return nil, err
