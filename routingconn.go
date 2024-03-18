@@ -4,6 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/couchbase/goprotostellar/genproto/view_v1"
 
@@ -24,6 +27,8 @@ import (
 	"github.com/couchbase/goprotostellar/genproto/search_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 type routingConnOptions struct {
@@ -31,6 +36,8 @@ type routingConnOptions struct {
 	ClientCertificate  *x509.CertPool
 	Username           string
 	Password           string
+	TracerProvider     trace.TracerProvider
+	MeterProvider      metric.MeterProvider
 }
 
 type routingConn struct {
@@ -79,6 +86,17 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 	if perRpcDialOpt != nil {
 		dialOpts = append(dialOpts, perRpcDialOpt)
 	}
+
+	clientOpts := []otelgrpc.Option{
+		otelgrpc.WithPropagators(propagation.TraceContext{}),
+	}
+	if opts.TracerProvider != nil {
+		clientOpts = append(clientOpts, otelgrpc.WithTracerProvider(opts.TracerProvider))
+	}
+	if opts.MeterProvider != nil {
+		clientOpts = append(clientOpts, otelgrpc.WithMeterProvider(opts.MeterProvider))
+	}
+	dialOpts = append(dialOpts, grpc.WithStatsHandler(otelgrpc.NewClientHandler(clientOpts...)))
 
 	conn, err := grpc.DialContext(ctx, address, dialOpts...)
 	if err != nil {
