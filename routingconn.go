@@ -57,6 +57,8 @@ type routingConn struct {
 // Verify that routingConn implements Conn
 var _ Conn = (*routingConn)(nil)
 
+const maxMsgSize = 26214400 // 25MiB
+
 func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptions) (*routingConn, error) {
 	var transportDialOpt grpc.DialOption
 	var perRpcDialOpt grpc.DialOption
@@ -69,7 +71,6 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 	} else { // plain text
 		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
-
 	// setup basic auth.
 	if opts.Username != "" && opts.Password != "" {
 		basicAuthCreds, err := NewGrpcBasicAuth(opts.Username, opts.Password)
@@ -77,7 +78,6 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 			return nil, err
 		}
 		perRpcDialOpt = grpc.WithPerRPCCredentials(basicAuthCreds)
-
 	} else {
 		perRpcDialOpt = nil
 	}
@@ -97,6 +97,7 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		clientOpts = append(clientOpts, otelgrpc.WithMeterProvider(opts.MeterProvider))
 	}
 	dialOpts = append(dialOpts, grpc.WithStatsHandler(otelgrpc.NewClientHandler(clientOpts...)))
+	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxRecvMsgSizeCallOption{MaxRecvMsgSize: maxMsgSize}))
 
 	conn, err := grpc.DialContext(ctx, address, dialOpts...)
 	if err != nil {
