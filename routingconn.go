@@ -63,10 +63,8 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 	var transportDialOpt grpc.DialOption
 	var perRpcDialOpt grpc.DialOption
 
-	if opts.ClientCertificate != nil { // use tls
-		transportDialOpt = grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(opts.ClientCertificate, ""))
-	} else if opts.InsecureSkipVerify { // use tls, but skip verification
-		creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
+	if opts.ClientCertificate != nil || opts.InsecureSkipVerify {
+		creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: opts.InsecureSkipVerify, RootCAs: opts.ClientCertificate})
 		transportDialOpt = grpc.WithTransportCredentials(creds)
 	} else { // plain text
 		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
