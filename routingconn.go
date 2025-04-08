@@ -33,7 +33,7 @@ import (
 
 type routingConnOptions struct {
 	InsecureSkipVerify bool // used for enabling TLS, but skipping verification
-	ClientCertificate  *x509.CertPool
+	RootCAs  *x509.CertPool
 	Username           string
 	Password           string
 	TracerProvider     trace.TracerProvider
@@ -63,8 +63,8 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 	var transportDialOpt grpc.DialOption
 	var perRpcDialOpt grpc.DialOption
 
-	if opts.ClientCertificate != nil || opts.InsecureSkipVerify {
-		creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: opts.InsecureSkipVerify, RootCAs: opts.ClientCertificate})
+	if opts.RootCAs != nil || opts.InsecureSkipVerify {
+		creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: opts.InsecureSkipVerify, RootCAs: opts.RootCAs})
 		transportDialOpt = grpc.WithTransportCredentials(creds)
 	} else { // plain text
 		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
