@@ -43,7 +43,7 @@ type RoutingClient struct {
 var _ Conn = (*RoutingClient)(nil)
 
 type DialOptions struct {
-	ClientCertificate  *x509.CertPool
+	RootCAs  *x509.CertPool
 	Username           string
 	Password           string
 	Logger             *zap.Logger
@@ -84,7 +84,7 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 
 	for i := uint32(0); i < poolSize; i++ {
 		conn, err := dialRoutingConn(ctx, target, &routingConnOptions{
-			ClientCertificate:  opts.ClientCertificate,
+			RootCAs:  opts.RootCAs,
 			Username:           opts.Username,
 			Password:           opts.Password,
 			InsecureSkipVerify: opts.InsecureSkipVerify,
