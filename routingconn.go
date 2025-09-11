@@ -16,8 +16,6 @@ import (
 
 	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
 
-	"google.golang.org/grpc/credentials/insecure"
-
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
 	"github.com/couchbase/goprotostellar/genproto/analytics_v1"
@@ -66,9 +64,16 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 	if opts.RootCAs != nil || opts.InsecureSkipVerify {
 		creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: opts.InsecureSkipVerify, RootCAs: opts.RootCAs})
 		transportDialOpt = grpc.WithTransportCredentials(creds)
-	} else { // plain text
-		transportDialOpt = grpc.WithTransportCredentials(insecure.NewCredentials())
+	} else { // use system certs
+		pool, err := x509.SystemCertPool()
+		if err != nil {
+			return nil, err
+		}
+
+		creds := credentials.NewTLS(&tls.Config{RootCAs: pool})
+		transportDialOpt = grpc.WithTransportCredentials(creds)
 	}
+
 	// setup basic auth.
 	if opts.Username != "" && opts.Password != "" {
 		basicAuthCreds, err := NewGrpcBasicAuth(opts.Username, opts.Password)
