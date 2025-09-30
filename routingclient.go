@@ -2,11 +2,13 @@ package gocbcoreps
 
 import (
 	"context"
+	"crypto/tls"
 	"crypto/x509"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 	"net"
 	"sync"
+
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 
 	grpc_logsettable "github.com/grpc-ecosystem/go-grpc-middleware/logging/settable"
 	"go.uber.org/zap/zapgrpc"
@@ -43,7 +45,8 @@ type RoutingClient struct {
 var _ Conn = (*RoutingClient)(nil)
 
 type DialOptions struct {
-	RootCAs  *x509.CertPool
+	RootCAs            *x509.CertPool
+	Certificate        *tls.Certificate
 	Username           string
 	Password           string
 	Logger             *zap.Logger
@@ -84,7 +87,8 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 
 	for i := uint32(0); i < poolSize; i++ {
 		conn, err := dialRoutingConn(ctx, target, &routingConnOptions{
-			RootCAs:  opts.RootCAs,
+			RootCAs:            opts.RootCAs,
+			Certificate:        opts.Certificate,
 			Username:           opts.Username,
 			Password:           opts.Password,
 			InsecureSkipVerify: opts.InsecureSkipVerify,
