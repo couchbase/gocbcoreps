@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
+
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -31,7 +33,8 @@ import (
 
 type routingConnOptions struct {
 	InsecureSkipVerify bool // used for enabling TLS, but skipping verification
-	RootCAs  *x509.CertPool
+	RootCAs            *x509.CertPool
+	Certificate        *tls.Certificate
 	Username           string
 	Password           string
 	TracerProvider     trace.TracerProvider
@@ -58,21 +61,7 @@ var _ Conn = (*routingConn)(nil)
 const maxMsgSize = 26214400 // 25MiB
 
 func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptions) (*routingConn, error) {
-	var transportDialOpt grpc.DialOption
 	var perRpcDialOpt grpc.DialOption
-
-	if opts.RootCAs != nil || opts.InsecureSkipVerify {
-		creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: opts.InsecureSkipVerify, RootCAs: opts.RootCAs})
-		transportDialOpt = grpc.WithTransportCredentials(creds)
-	} else { // use system certs
-		pool, err := x509.SystemCertPool()
-		if err != nil {
-			return nil, err
-		}
-
-		creds := credentials.NewTLS(&tls.Config{RootCAs: pool})
-		transportDialOpt = grpc.WithTransportCredentials(creds)
-	}
 
 	// setup basic auth.
 	if opts.Username != "" && opts.Password != "" {
@@ -85,7 +74,31 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		perRpcDialOpt = nil
 	}
 
-	dialOpts := []grpc.DialOption{transportDialOpt}
+	var certificates []tls.Certificate
+	if opts.Certificate != nil {
+		if perRpcDialOpt != nil {
+			return nil, errors.New("cannot use basic credentials and client cert auth at the same time")
+		}
+
+		certificates = append(certificates, *opts.Certificate)
+	}
+
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, err
+	}
+
+	if opts.RootCAs != nil {
+		pool = opts.RootCAs
+	}
+
+	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(
+		&tls.Config{
+			InsecureSkipVerify: opts.InsecureSkipVerify,
+			RootCAs:            pool,
+			Certificates:       certificates,
+		},
+	))}
 	if perRpcDialOpt != nil {
 		dialOpts = append(dialOpts, perRpcDialOpt)
 	}
