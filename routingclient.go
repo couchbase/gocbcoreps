@@ -9,6 +9,8 @@ import (
 
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/grpc/balancer"
+	"google.golang.org/grpc/resolver"
 
 	grpc_logsettable "github.com/grpc-ecosystem/go-grpc-middleware/logging/settable"
 	"go.uber.org/zap/zapgrpc"
@@ -35,10 +37,11 @@ type routingClient_Bucket struct {
 }
 
 type RoutingClient struct {
-	routing *atomicRoutingTable
-	lock    sync.Mutex
-	buckets map[string]*routingClient_Bucket
-	logger  *zap.Logger
+	routing        *atomicRoutingTable
+	routingManager *routingManager
+	lock           sync.Mutex
+	buckets        map[string]*routingClient_Bucket
+	logger         *zap.Logger
 }
 
 // Verify that RoutingClient implements Conn
@@ -85,6 +88,16 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 		poolSize = opts.PoolSize
 	}
 
+	// TO DO - consider if these belong elsewhere - we can always register the custom
+	// balancer/resolver, and whether they are used will be dependent on if we
+	// prepend the custom scheme to the address when we call DialContext
+	balancer.Register(CustomLBBuilder{
+		logger: logger,
+	})
+	resolver.Register(&CustomResolverBuilder{
+		logger: logger,
+	})
+
 	for i := uint32(0); i < poolSize; i++ {
 		conn, err := dialRoutingConn(ctx, target, &routingConnOptions{
 			RootCAs:            opts.RootCAs,
@@ -107,10 +120,13 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 		Conns: newRoutingConnPool(conns),
 	})
 
+	routingManager := newRoutingManager(conns[0].routingV1, logger)
+
 	return &RoutingClient{
-		routing: routing,
-		buckets: make(map[string]*routingClient_Bucket),
-		logger:  logger,
+		routing:        routing,
+		routingManager: routingManager,
+		buckets:        make(map[string]*routingClient_Bucket),
+		logger:         logger,
 	}, nil
 }
 
@@ -226,6 +242,10 @@ func (c *RoutingClient) QueryAdminV1() admin_query_v1.QueryAdminServiceClient {
 
 func (c *RoutingClient) SearchAdminV1() admin_search_v1.SearchAdminServiceClient {
 	return &routingImpl_SearchAdminV1{c}
+}
+
+func (c *RoutingClient) RoutingManager() *routingManager {
+	return c.routingManager
 }
 
 func (c *RoutingClient) Close() error {
