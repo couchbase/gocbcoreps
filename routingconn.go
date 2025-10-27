@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
@@ -114,6 +115,11 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 	}
 	dialOpts = append(dialOpts, grpc.WithStatsHandler(otelgrpc.NewClientHandler(clientOpts...)))
 	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxRecvMsgSizeCallOption{MaxRecvMsgSize: maxMsgSize}))
+
+	// TO DO - make this configurable some how...
+	// This will make grpc use our custom name resolution
+
+	address = fmt.Sprintf("%s:///%s", customScheme, address)
 
 	conn, err := grpc.DialContext(ctx, address, dialOpts...)
 	if err != nil {
