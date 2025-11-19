@@ -2,7 +2,6 @@ package gocbcoreps
 
 import (
 	"context"
-	"crypto/tls"
 	"crypto/x509"
 	"net"
 	"sync"
@@ -39,6 +38,7 @@ type RoutingClient struct {
 	lock    sync.Mutex
 	buckets map[string]*routingClient_Bucket
 	logger  *zap.Logger
+	auth    Authenticator
 }
 
 // Verify that RoutingClient implements Conn
@@ -46,9 +46,7 @@ var _ Conn = (*RoutingClient)(nil)
 
 type DialOptions struct {
 	RootCAs            *x509.CertPool
-	Certificate        *tls.Certificate
-	Username           string
-	Password           string
+	Authenticator      Authenticator
 	Logger             *zap.Logger
 	InsecureSkipVerify bool
 	PoolSize           uint32
@@ -88,9 +86,7 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 	for i := uint32(0); i < poolSize; i++ {
 		conn, err := dialRoutingConn(ctx, target, &routingConnOptions{
 			RootCAs:            opts.RootCAs,
-			Certificate:        opts.Certificate,
-			Username:           opts.Username,
-			Password:           opts.Password,
+			Authenticator:      opts.Authenticator,
 			InsecureSkipVerify: opts.InsecureSkipVerify,
 			TracerProvider:     opts.TracerProvider,
 			MeterProvider:      opts.MeterProvider,
@@ -111,6 +107,7 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 		routing: routing,
 		buckets: make(map[string]*routingClient_Bucket),
 		logger:  logger,
+		auth:    opts.Authenticator,
 	}, nil
 }
 
@@ -164,6 +161,39 @@ func (c *RoutingClient) CloseBucket(bucketName string) {
 	delete(c.buckets, bucketName)
 
 	c.lock.Unlock()
+}
+
+type ReconfigureAuthenticatorOptions struct {
+	Authenticator Authenticator
+}
+
+func (c *RoutingClient) ReconfigureAuthenticator(opts ReconfigureAuthenticatorOptions) error {
+	auth := opts.Authenticator
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	switch a := c.auth.(type) {
+	case *BasicAuthenticator:
+		switch na := auth.(type) {
+		case *BasicAuthenticator:
+			data := na.encodedData.Load()
+			a.encodedData.Store(data)
+		default:
+			return ErrAuthenticatorMismatch
+		}
+	case *CertificateAuthenticator:
+		switch na := auth.(type) {
+		case *CertificateAuthenticator:
+			cert := na.certificate.Load()
+			a.certificate.Store(cert)
+		default:
+			return ErrAuthenticatorMismatch
+		}
+	default:
+		return ErrAuthenticatorUnsupported
+	}
+
+	return nil
 }
 
 func (c *RoutingClient) ConnectionState() ConnState {

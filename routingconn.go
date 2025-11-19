@@ -4,8 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
-
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -34,9 +32,7 @@ import (
 type routingConnOptions struct {
 	InsecureSkipVerify bool // used for enabling TLS, but skipping verification
 	RootCAs            *x509.CertPool
-	Certificate        *tls.Certificate
-	Username           string
-	Password           string
+	Authenticator      Authenticator
 	TracerProvider     trace.TracerProvider
 	MeterProvider      metric.MeterProvider
 }
@@ -62,25 +58,13 @@ const maxMsgSize = 26214400 // 25MiB
 
 func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptions) (*routingConn, error) {
 	var perRpcDialOpt grpc.DialOption
+	var getClientCertificate func(info *tls.CertificateRequestInfo) (*tls.Certificate, error)
 
-	// setup basic auth.
-	if opts.Username != "" && opts.Password != "" {
-		basicAuthCreds, err := NewGrpcBasicAuth(opts.Username, opts.Password)
-		if err != nil {
-			return nil, err
-		}
-		perRpcDialOpt = grpc.WithPerRPCCredentials(basicAuthCreds)
-	} else {
-		perRpcDialOpt = nil
-	}
-
-	var certificates []tls.Certificate
-	if opts.Certificate != nil {
-		if perRpcDialOpt != nil {
-			return nil, errors.New("cannot use basic credentials and client cert auth at the same time")
-		}
-
-		certificates = append(certificates, *opts.Certificate)
+	switch a := opts.Authenticator.(type) {
+	case *BasicAuthenticator:
+		perRpcDialOpt = grpc.WithPerRPCCredentials(a)
+	case *CertificateAuthenticator:
+		getClientCertificate = a.GetClientCertificate
 	}
 
 	pool, err := x509.SystemCertPool()
@@ -94,9 +78,9 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 
 	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(
 		&tls.Config{
-			InsecureSkipVerify: opts.InsecureSkipVerify,
-			RootCAs:            pool,
-			Certificates:       certificates,
+			InsecureSkipVerify:   opts.InsecureSkipVerify,
+			RootCAs:              pool,
+			GetClientCertificate: getClientCertificate,
 		},
 	))}
 	if perRpcDialOpt != nil {
