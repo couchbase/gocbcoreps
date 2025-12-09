@@ -6,12 +6,12 @@ import (
 	"github.com/couchbase/goprotostellar/genproto/analytics_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
-	"github.com/couchbase/goprotostellar/genproto/routing_v1"
+	"github.com/couchbase/goprotostellar/genproto/routing_v2"
 	"github.com/couchbase/goprotostellar/genproto/search_v1"
 )
 
 type Conn interface {
-	RoutingV1() routing_v1.RoutingServiceClient
+	RoutingV2() routing_v2.RoutingServiceClient
 	KvV1() kv_v1.KvServiceClient
 	QueryV1() query_v1.QueryServiceClient
 	CollectionV1() admin_collection_v1.CollectionAdminServiceClient
