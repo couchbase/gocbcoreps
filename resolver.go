@@ -15,11 +15,7 @@ import (
 	"google.golang.org/grpc/resolver"
 )
 
-<<<<<<< HEAD
 const OptimizedRoutingScheme = "couchbase2+optimized"
-=======
-const optimizedRoutingScheme = "optimized"
->>>>>>> 41db69a (ING-1352: Bump to routingV2 and add custom name resolver)
 
 const defaultResolveInterval = time.Second * 30
 
@@ -33,11 +29,7 @@ type CustomResolverBuilder struct {
 	resolveInterval time.Duration
 }
 
-<<<<<<< HEAD
 func (*CustomResolverBuilder) Scheme() string { return OptimizedRoutingScheme }
-=======
-func (*CustomResolverBuilder) Scheme() string { return optimizedRoutingScheme }
->>>>>>> 41db69a (ING-1352: Bump to routingV2 and add custom name resolver)
 
 func (c *CustomResolverBuilder) Build(target resolver.Target, cc resolver.ClientConn, rOpts resolver.BuildOptions) (resolver.Resolver, error) {
 	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(rOpts.DialCreds)}
