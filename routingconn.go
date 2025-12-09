@@ -4,10 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/couchbase/goprotostellar/genproto/routing_v2"
 	"github.com/couchbase/goprotostellar/genproto/view_v1"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
@@ -21,7 +23,6 @@ import (
 	"github.com/couchbase/goprotostellar/genproto/analytics_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
-	"github.com/couchbase/goprotostellar/genproto/routing_v1"
 	"github.com/couchbase/goprotostellar/genproto/search_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -39,7 +40,6 @@ type routingConnOptions struct {
 
 type routingConn struct {
 	conn          *grpc.ClientConn
-	routingV1     routing_v1.RoutingServiceClient
 	kvV1          kv_v1.KvServiceClient
 	queryV1       query_v1.QueryServiceClient
 	collectionV1  admin_collection_v1.CollectionAdminServiceClient
@@ -49,6 +49,7 @@ type routingConn struct {
 	viewV1        view_v1.ViewServiceClient
 	queryAdminV1  admin_query_v1.QueryAdminServiceClient
 	searchAdminV1 admin_search_v1.SearchAdminServiceClient
+	routingV2     routing_v2.RoutingServiceClient
 }
 
 // Verify that routingConn implements Conn
@@ -106,7 +107,6 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 
 	return &routingConn{
 		conn:          conn,
-		routingV1:     routing_v1.NewRoutingServiceClient(conn),
 		kvV1:          kv_v1.NewKvServiceClient(conn),
 		queryV1:       query_v1.NewQueryServiceClient(conn),
 		collectionV1:  admin_collection_v1.NewCollectionAdminServiceClient(conn),
@@ -116,11 +116,12 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		searchV1:      search_v1.NewSearchServiceClient(conn),
 		viewV1:        view_v1.NewViewServiceClient(conn),
 		searchAdminV1: admin_search_v1.NewSearchAdminServiceClient(conn),
+		routingV2:     routing_v2.NewRoutingServiceClient(conn),
 	}, nil
 }
 
-func (c *routingConn) RoutingV1() routing_v1.RoutingServiceClient {
-	return c.routingV1
+func (c *routingConn) RoutingV2() routing_v2.RoutingServiceClient {
+	return c.routingV2
 }
 
 func (c *routingConn) KvV1() kv_v1.KvServiceClient {
