@@ -8,6 +8,7 @@ import (
 
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/resolver"
 
 	grpc_logsettable "github.com/grpc-ecosystem/go-grpc-middleware/logging/settable"
@@ -77,6 +78,10 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 	if opts.PoolSize > 0 {
 		poolSize = opts.PoolSize
 	}
+
+	balancer.Register(CustomLBBuilder{
+		logger: logger,
+	})
 
 	auth, _ := opts.Authenticator.(*BasicAuthenticator)
 	resolver.Register(&CustomResolverBuilder{
