@@ -48,6 +48,7 @@ type DialOptions struct {
 	PoolSize           uint32
 	TracerProvider     trace.TracerProvider
 	MeterProvider      metric.MeterProvider
+	OptimizedRouting   bool
 }
 
 func Dial(target string, opts *DialOptions) (*RoutingClient, error) {
@@ -90,6 +91,10 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 		basicAuth:       auth,
 		resolveInterval: defaultResolveInterval,
 	})
+
+	if opts.OptimizedRouting {
+		target = OptimizedRoutingScheme + ":///" + target
+	}
 
 	for i := uint32(0); i < poolSize; i++ {
 		conn, err := dialRoutingConn(ctx, target, &routingConnOptions{
