@@ -78,11 +78,10 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 		poolSize = opts.PoolSize
 	}
 
-	auth, _ := opts.Authenticator.(*BasicAuthenticator)
 	resolver.Register(&CustomResolverBuilder{
 		ctx:             ctx,
 		logger:          logger,
-		basicAuth:       auth,
+		auth:            opts.Authenticator,
 		resolveInterval: defaultResolveInterval,
 	})
 
