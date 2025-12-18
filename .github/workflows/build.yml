@@ -1,0 +1,19 @@
+name: Validate Build
+on: [ pull_request ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23' # or whatever you use
+      - name: Install Dependencies
+        run: go get ./...
+      - name: Build Binary
+        run: go build ./...
