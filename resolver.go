@@ -19,9 +19,6 @@ const OptimizedRoutingScheme = "couchbase2+optimized"
 
 const defaultResolveInterval = time.Second * 30
 
-// TO DO - move this into the load balancing implementation when added.
-const customLBName = "optimized_load_balancer"
-
 type CustomResolverBuilder struct {
 	logger          *zap.Logger
 	ctx             context.Context
