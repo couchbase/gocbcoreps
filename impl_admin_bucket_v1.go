@@ -20,11 +20,11 @@ func (c *routingImpl_BucketV1) CreateBucket(ctx context.Context, in *admin_bucke
 	return c.client.fetchConn().BucketV1().CreateBucket(ctx, in, opts...)
 }
 func (c *routingImpl_BucketV1) UpdateBucket(ctx context.Context, in *admin_bucket_v1.UpdateBucketRequest, opts ...grpc.CallOption) (*admin_bucket_v1.UpdateBucketResponse, error) {
-	return c.client.fetchConnForBucket(in.BucketName).bucketV1.UpdateBucket(ctx, in, opts...)
+	return c.client.fetchConn().BucketV1().UpdateBucket(ctx, in, opts...)
 }
 func (c *routingImpl_BucketV1) DeleteBucket(ctx context.Context, in *admin_bucket_v1.DeleteBucketRequest, opts ...grpc.CallOption) (*admin_bucket_v1.DeleteBucketResponse, error) {
-	return c.client.fetchConnForBucket(in.BucketName).bucketV1.DeleteBucket(ctx, in, opts...)
+	return c.client.fetchConn().BucketV1().DeleteBucket(ctx, in, opts...)
 }
 func (c *routingImpl_BucketV1) FlushBucket(ctx context.Context, in *admin_bucket_v1.FlushBucketRequest, opts ...grpc.CallOption) (*admin_bucket_v1.FlushBucketResponse, error) {
-	return c.client.fetchConnForBucket(in.BucketName).bucketV1.FlushBucket(ctx, in, opts...)
+	return c.client.fetchConn().BucketV1().FlushBucket(ctx, in, opts...)
 }

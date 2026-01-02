@@ -166,16 +166,6 @@ func (c *RoutingClient) fetchConn() *routingConn {
 	return r.Conns.Conn()
 }
 
-func (c *RoutingClient) fetchConnForBucket(bucketName string) *routingConn {
-	// TODO(brett19): Implement routing of bucket-specific requests
-	return c.fetchConn()
-}
-
-func (c *RoutingClient) fetchConnForKey(bucketName string, key string) *routingConn {
-	// TODO(brett19): Implement routing of key-specific requests.
-	return c.fetchConn()
-}
-
 func (c *RoutingClient) RoutingV2() routing_v2.RoutingServiceClient {
 	return &routingImpl_RoutingV2{c}
 }
