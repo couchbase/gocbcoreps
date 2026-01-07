@@ -8,26 +8,24 @@ import (
 
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
+
 	"google.golang.org/grpc/balancer"
+	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/resolver"
 
-	grpc_logsettable "github.com/grpc-ecosystem/go-grpc-middleware/logging/settable"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapgrpc"
-
-	"github.com/couchbase/goprotostellar/genproto/view_v1"
-
-	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
-
-	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
+	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
+	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
 	"github.com/couchbase/goprotostellar/genproto/analytics_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
 	"github.com/couchbase/goprotostellar/genproto/routing_v2"
 	"github.com/couchbase/goprotostellar/genproto/search_v1"
-	"go.uber.org/zap"
+	"github.com/couchbase/goprotostellar/genproto/view_v1"
 )
 
 type RoutingClient struct {
@@ -71,7 +69,7 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 	}
 
 	// Setup grpc level logging, so that we can pipe connection level issues into our logs.
-	grpc_logsettable.ReplaceGrpcLoggerV2().Set(zapgrpc.NewLogger(logger))
+	grpclog.SetLoggerV2(zapgrpc.NewLogger(logger))
 
 	var conns []*routingConn
 

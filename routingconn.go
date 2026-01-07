@@ -9,23 +9,20 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/couchbase/goprotostellar/genproto/routing_v2"
-	"github.com/couchbase/goprotostellar/genproto/view_v1"
-
-	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
-
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
-
-	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
+	"github.com/couchbase/goprotostellar/genproto/admin_query_v1"
+	"github.com/couchbase/goprotostellar/genproto/admin_search_v1"
 	"github.com/couchbase/goprotostellar/genproto/analytics_v1"
 	"github.com/couchbase/goprotostellar/genproto/kv_v1"
 	"github.com/couchbase/goprotostellar/genproto/query_v1"
+	"github.com/couchbase/goprotostellar/genproto/routing_v2"
 	"github.com/couchbase/goprotostellar/genproto/search_v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
+	"github.com/couchbase/goprotostellar/genproto/view_v1"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )

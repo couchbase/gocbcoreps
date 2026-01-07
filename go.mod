@@ -3,11 +3,10 @@ module github.com/couchbase/gocbcoreps
 go 1.23.0
 
 require (
-	github.com/couchbase/goprotostellar v1.0.3
-	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
-	go.opentelemetry.io/otel v1.36.0
-	go.opentelemetry.io/otel/metric v1.36.0
-	go.opentelemetry.io/otel/trace v1.36.0
+	github.com/couchbase/goprotostellar v1.0.5
+	go.opentelemetry.io/otel v1.38.0
+	go.opentelemetry.io/otel/metric v1.38.0
+	go.opentelemetry.io/otel/trace v1.38.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.74.2
 )
