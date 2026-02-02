@@ -71,7 +71,7 @@ jobs:
       - name: Run stellar gateway
         run: |
           cd stellar-gateway
-          nohup go run ./cmd/gateway/main.go --log-level debug --cb-host ${{ steps.start-cluster.outputs.node-ip }} --self-sign > logs.txt 2>&1 &
+          nohup go run ./cmd/gateway/main.go --log-level debug --cb-host ${{ steps.start-cluster.outputs.node-ip }} --self-sign --cb-host-is-local=true > logs.txt 2>&1 &
       - name: Run Tests
         timeout-minutes: 10
         env:
