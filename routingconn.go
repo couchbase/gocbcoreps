@@ -65,13 +65,14 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		getClientCertificate = a.GetClientCertificate
 	}
 
-	pool, err := x509.SystemCertPool()
-	if err != nil {
-		return nil, err
-	}
-
-	if opts.RootCAs != nil {
-		pool = opts.RootCAs
+	pool := opts.RootCAs
+	if pool == nil {
+		var err error
+		pool, err = x509.SystemCertPool()
+		if err != nil {
+			return nil, err
+		}
+		pool.AppendCertsFromPEM(capellaRootCA)
 	}
 
 	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(
