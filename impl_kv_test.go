@@ -314,7 +314,7 @@ func TestKvServiceGetAndLock(t *testing.T) {
 				ScopeName:      "_default",
 				CollectionName: "_default",
 				Key:            test.id,
-				LockTime:       test.lockTime,
+				LockTimeSecs:   test.lockTime,
 				Compression:    test.compression,
 			})
 			requireRpcStatus(t, err, test.expect)

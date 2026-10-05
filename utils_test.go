@@ -213,7 +213,7 @@ func lockDoc(t *testing.T, docId string) uint64 {
 		ScopeName:      TestOpts.ScopeName,
 		CollectionName: TestOpts.CollectionName,
 		Key:            docId,
-		LockTime:       30,
+		LockTimeSecs:   30,
 	})
 	requireRpcStatus(t, err, codes.OK)
 	require.NotZero(t, galResp.Cas)
