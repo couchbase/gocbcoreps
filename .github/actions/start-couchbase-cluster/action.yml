@@ -1,5 +1,10 @@
 name: Start Couchbase Cluster
 
+inputs:
+  version:
+    description: "Couchbase Server version to use"
+    required: true
+
 outputs:
   dino-id:
     description: "Dinocluster ID of the Couchbase Cluster"
@@ -18,7 +23,7 @@ runs:
         CLUSTERCONFIG: |
           nodes:
             - count: 3
-              version: ${{ matrix.server }}
+              version: ${{ inputs.version }}
               services: [kv, n1ql, index, fts, cbas]
           docker:
             kv-memory: 2048
