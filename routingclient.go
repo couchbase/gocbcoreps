@@ -10,11 +10,9 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"google.golang.org/grpc/balancer"
-	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/resolver"
 
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapgrpc"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
@@ -67,9 +65,6 @@ func DialContext(ctx context.Context, target string, opts *DialOptions) (*Routin
 	if logger == nil {
 		logger = zap.NewNop()
 	}
-
-	// Setup grpc level logging, so that we can pipe connection level issues into our logs.
-	grpclog.SetLoggerV2(zapgrpc.NewLogger(logger))
 
 	var conns []*routingConn
 
