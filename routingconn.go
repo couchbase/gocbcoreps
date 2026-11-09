@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/health/grpc_health_v1"
 
 	"github.com/couchbase/goprotostellar/genproto/admin_bucket_v1"
 	"github.com/couchbase/goprotostellar/genproto/admin_collection_v1"
@@ -47,6 +48,7 @@ type routingConn struct {
 	queryAdminV1  admin_query_v1.QueryAdminServiceClient
 	searchAdminV1 admin_search_v1.SearchAdminServiceClient
 	routingV2     routing_v2.RoutingServiceClient
+	healthV1      grpc_health_v1.HealthClient
 }
 
 // Verify that routingConn implements Conn
@@ -54,13 +56,19 @@ var _ Conn = (*routingConn)(nil)
 
 const maxMsgSize = 26214400 // 25MiB
 
+// perRPCCredentialsDialOption sets credentials as a default call option rather than with grpc.WithPerRPCCredentials,
+// so that individual calls can override them (e.g. health checks, which are sent without credentials).
+func perRPCCredentialsDialOption(credentials credentials.PerRPCCredentials) grpc.DialOption {
+	return grpc.WithDefaultCallOptions(grpc.PerRPCCredentials(credentials))
+}
+
 func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptions) (*routingConn, error) {
 	var perRpcDialOpt grpc.DialOption
 	var getClientCertificate func(info *tls.CertificateRequestInfo) (*tls.Certificate, error)
 
 	switch a := opts.Authenticator.(type) {
 	case *BasicAuthenticator:
-		perRpcDialOpt = grpc.WithPerRPCCredentials(a)
+		perRpcDialOpt = perRPCCredentialsDialOption(a)
 	case *CertificateAuthenticator:
 		getClientCertificate = a.GetClientCertificate
 	}
@@ -115,11 +123,16 @@ func dialRoutingConn(ctx context.Context, address string, opts *routingConnOptio
 		viewV1:        view_v1.NewViewServiceClient(conn),
 		searchAdminV1: admin_search_v1.NewSearchAdminServiceClient(conn),
 		routingV2:     routing_v2.NewRoutingServiceClient(conn),
+		healthV1:      grpc_health_v1.NewHealthClient(conn),
 	}, nil
 }
 
 func (c *routingConn) RoutingV2() routing_v2.RoutingServiceClient {
 	return c.routingV2
+}
+
+func (c *routingConn) HealthV1() grpc_health_v1.HealthClient {
+	return c.healthV1
 }
 
 func (c *routingConn) KvV1() kv_v1.KvServiceClient {
