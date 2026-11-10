@@ -11,6 +11,7 @@ import (
 
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/grpclog"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/resolver"
 
 	"go.uber.org/zap"
@@ -168,6 +169,10 @@ func (c *RoutingClient) fetchConn() *routingConn {
 
 func (c *RoutingClient) RoutingV2() routing_v2.RoutingServiceClient {
 	return &routingImpl_RoutingV2{c}
+}
+
+func (c *RoutingClient) HealthV1() grpc_health_v1.HealthClient {
+	return &routingImpl_HealthV1{c}
 }
 
 func (c *RoutingClient) KvV1() kv_v1.KvServiceClient {
