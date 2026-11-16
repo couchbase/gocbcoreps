@@ -14,16 +14,19 @@ jobs:
   test:
     name: Test
     strategy:
+      fail-fast: false
       matrix:
         server:
-          - 8.1.0-1262
-          - 8.0.0
-          - 7.6.8
-          - 7.2.8
+          - 8.5-stable
+          - 8.0-stable
+          - 8.0-release
+          - 7.6-stable
+          - 7.6-release
+          - 7.2-release
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           path: gocbcoreps
@@ -31,11 +34,18 @@ jobs:
         uses: ./gocbcoreps/.github/actions/install-cbdinocluster
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve server version
+        uses: couchbaselabs/sdk-resolve-cb-alias-action@v1
+        id: resolve-server
+        with:
+          alias: ${{ matrix.server }}
       - name: Start couchbase cluster
         id: start-cluster
         uses: ./gocbcoreps/.github/actions/start-couchbase-cluster
+        with:
+          version: ${{ steps.resolve-server.outputs.version }}
       - name: Install Stellar Gateway
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: couchbase/stellar-gateway
           submodules: recursive
@@ -43,9 +53,9 @@ jobs:
       - name: Check Files
         run: |
           ls
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
-          go-version: 1.24
+          go-version: '1.26'
       - uses: arduino/setup-protoc@v3
         with:
           version: 31.1
@@ -88,14 +98,14 @@ jobs:
           cbdinocluster -v collect-logs ${{ steps.start-cluster.outputs.dino-id }} ./logs
       - name: Upload couchbase logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cbcollect-logs-${{ matrix.server }}
           path: ./logs/*
           retention-days: 5
       - name: Upload stellar gateway logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: stellar-gateway-logs-${{ matrix.server }}
           path: ./stellar-gateway/logs.txt
